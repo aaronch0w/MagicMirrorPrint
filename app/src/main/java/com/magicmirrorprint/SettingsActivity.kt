@@ -4,7 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.widget.*
 
@@ -157,6 +159,32 @@ class SettingsActivity : Activity() {
             setOnClickListener { sendTestPage() }
         }
         root.addView(testPrintButton)
+
+        // ── Overlay permission warning ────────────────────────────────────────
+        if (!OverlayManager.canShow(this)) {
+            val banner = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setBackgroundColor(0xFFFFF9C4.toInt())
+                setPadding(24, 16, 24, 16)
+            }
+            banner.addView(TextView(this).apply {
+                text = "\"Draw over other apps\" permission is needed to show the print alert over the Magic Mirror app."
+                textSize = 13f
+                setTextColor(0xFF5D4037.toInt())
+            })
+            val grantBtn = Button(this).apply {
+                text = "Grant Permission"
+                setOnClickListener {
+                    startActivity(Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    ))
+                }
+            }
+            banner.addView(grantBtn)
+            root.addView(banner)
+            addSpacing(root, 16)
+        }
 
         updateStatusUI()
         checkStoragePermission()

@@ -38,9 +38,11 @@ class WatcherService : Service() {
                 val path = intent.getStringExtra(EXTRA_PDF_PATH) ?: return START_STICKY
                 PrintManager.print(this, path, prefs)
                 notificationHelper.cancelReportNotification()
+                OverlayManager.dismiss(this)
             }
             ACTION_DISMISS -> {
                 notificationHelper.cancelReportNotification()
+                OverlayManager.dismiss(this)
             }
             else -> {
                 isRunning = true
@@ -175,11 +177,18 @@ class WatcherService : Service() {
                     val clientName = dateDir.parentFile?.name ?: "Unknown Client"
                     val scanTimestamp = formatTimestamp(dateDir.name)
 
-                    // Fire the heads-up notification
                     notificationHelper.showReportNotification(
                         pdfPath = pdfFile.absolutePath,
                         clientName = clientName,
                         scanTimestamp = scanTimestamp
+                    )
+                    // Overlay draws above all apps including full-screen kiosk apps
+                    OverlayManager.show(
+                        context = this@WatcherService,
+                        pdfPath = pdfFile.absolutePath,
+                        clientName = clientName,
+                        scanTimestamp = scanTimestamp,
+                        timeoutSeconds = prefs.notifTimeoutSeconds
                     )
                 }
             }
