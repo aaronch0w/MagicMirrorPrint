@@ -15,6 +15,7 @@ class AppPrefs(context: Context) {
         private const val KEY_PRINTER_PORT    = "printer_port"
         private const val KEY_AUTO_PRINT      = "auto_print"
         private const val KEY_NOTIF_TIMEOUT   = "notif_timeout_seconds"
+        private const val KEY_SERVICE_ENABLED = "service_enabled"
 
         // Sensible defaults
         const val DEFAULT_TARGET_FILENAME = "customer_report.pdf"
@@ -45,6 +46,10 @@ class AppPrefs(context: Context) {
     var notifTimeoutSeconds: Int
         get() = prefs.getInt(KEY_NOTIF_TIMEOUT, DEFAULT_NOTIF_TIMEOUT)
         set(value) = prefs.edit().putInt(KEY_NOTIF_TIMEOUT, value).apply()
+
+    var serviceEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SERVICE_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_SERVICE_ENABLED, value).apply()
 
     fun isConfigured(): Boolean =
         rootFolder.isNotBlank() && printerIp.isNotBlank()

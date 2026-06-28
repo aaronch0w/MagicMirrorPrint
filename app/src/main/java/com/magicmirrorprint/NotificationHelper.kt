@@ -95,8 +95,17 @@ class NotificationHelper(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Full-screen intent makes the notification pop over kiosk/full-screen apps
+        val fullScreenIntent = PendingIntent.getActivity(
+            context, 3,
+            Intent(context, SettingsActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = Notification.Builder(context, CHANNEL_REPORT)
-            .setContentTitle("📄 New Report Ready")
+            .setContentTitle("New Report Ready")
             .setContentText("$clientName  •  $scanTimestamp")
             .setStyle(
                 Notification.BigTextStyle()
@@ -105,6 +114,7 @@ class NotificationHelper(private val context: Context) {
             .setSmallIcon(android.R.drawable.ic_menu_send)
             .setAutoCancel(false)
             .setOngoing(false)
+            .setFullScreenIntent(fullScreenIntent, true)
             // Action buttons shown on the heads-up and expanded notification
             .addAction(
                 Notification.Action.Builder(

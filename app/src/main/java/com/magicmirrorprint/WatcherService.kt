@@ -16,6 +16,7 @@ class WatcherService : Service() {
         const val EXTRA_PDF_PATH = "extra_pdf_path"
         const val EXTRA_CLIENT_NAME = "extra_client_name"
         const val EXTRA_SCAN_TIMESTAMP = "extra_scan_timestamp"
+        @Volatile var isRunning = false
     }
 
     // Holds all active FileObservers so they don't get garbage collected
@@ -42,7 +43,7 @@ class WatcherService : Service() {
                 notificationHelper.cancelReportNotification()
             }
             else -> {
-                // Normal start — show persistent watcher notification and begin watching
+                isRunning = true
                 startForeground(
                     NotificationHelper.WATCHER_NOTIFICATION_ID,
                     notificationHelper.buildWatcherNotification()
@@ -55,6 +56,7 @@ class WatcherService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        isRunning = false
         stopAllObservers()
     }
 

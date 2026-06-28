@@ -27,8 +27,6 @@ class SettingsActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var toggleServiceButton: Button
 
-    private var serviceRunning = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = AppPrefs(this)
@@ -164,6 +162,20 @@ class SettingsActivity : Activity() {
         checkStoragePermission()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Auto-start if user previously enabled the service but it's not running
+        // (covers reboot before BootReceiver fires, or process death)
+        if (!WatcherService.isRunning && prefs.serviceEnabled && prefs.isConfigured()) {
+            startService(Intent(this, WatcherService::class.java))
+        }
+        updateStatusUI()
+        // If service is running, get out of the way — user wants the Magic Mirror app
+        if (WatcherService.isRunning) {
+            moveTaskToBack(true)
+        }
+    }
+
     // ─── Actions ──────────────────────────────────────────────────────────────
 
     private fun launchFolderPicker() {
@@ -200,16 +212,17 @@ class SettingsActivity : Activity() {
     }
 
     private fun toggleService() {
-        if (serviceRunning) {
+        if (WatcherService.isRunning) {
             stopService(Intent(this, WatcherService::class.java))
-            serviceRunning = false
+            prefs.serviceEnabled = false
         } else {
             if (!prefs.isConfigured()) {
                 toast("Save your settings first (printer IP + root folder required)")
                 return
             }
             startService(Intent(this, WatcherService::class.java))
-            serviceRunning = true
+            prefs.serviceEnabled = true
+            moveTaskToBack(true)
         }
         updateStatusUI()
     }
@@ -226,7 +239,7 @@ class SettingsActivity : Activity() {
     }
 
     private fun updateStatusUI() {
-        if (serviceRunning) {
+        if (WatcherService.isRunning) {
             statusText.text = "● Watcher is RUNNING"
             statusText.setBackgroundColor(0xFFE8F5E9.toInt())
             statusText.setTextColor(0xFF2E7D32.toInt())

@@ -33,6 +33,7 @@ object PrintManager {
     private const val TAG_URI: Byte = 0x45.toByte()
     private const val TAG_MIME_MEDIA_TYPE: Byte = 0x49.toByte()
     private const val TAG_NAME_WITHOUT_LANGUAGE: Byte = 0x42.toByte()
+    private const val TAG_KEYWORD: Byte             = 0x44.toByte()
 
     fun print(context: Context, pdfPath: String, prefs: AppPrefs) {
         Thread {
@@ -143,8 +144,12 @@ object PrintManager {
         // document-format = application/pdf
         putIppAttribute(buf, TAG_MIME_MEDIA_TYPE, "document-format", "application/pdf")
 
-        // --- job-attributes-tag (empty, just mark it) ---
+        // --- job-attributes-tag ---
         buf.put(TAG_JOB_ATTRIBUTES)
+
+        // Force US Letter paper and scale A4 content to fit
+        putIppAttribute(buf, TAG_KEYWORD, "media", "na_letter_8.5x11in")
+        putIppAttribute(buf, TAG_KEYWORD, "print-scaling", "fit")
 
         // --- end-of-attributes-tag ---
         buf.put(TAG_END_ATTRIBUTES)
