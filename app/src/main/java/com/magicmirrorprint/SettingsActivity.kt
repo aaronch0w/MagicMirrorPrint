@@ -220,9 +220,8 @@ class SettingsActivity : Activity() {
             return
         }
         toast("Sending test job to ${prefs.printerIp}…")
-        // For test: creates a tiny temp PDF-like file and sends it
         val testFile = java.io.File(cacheDir, "test_print.pdf")
-        testFile.writeText("%PDF-1.4 test page from Magic Mirror Print")
+        testFile.writeBytes(PrintManager.buildTestPdf())
         PrintManager.print(this, testFile.absolutePath, prefs)
     }
 

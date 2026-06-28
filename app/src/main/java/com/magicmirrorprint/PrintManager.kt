@@ -47,30 +47,61 @@ object PrintManager {
                 }
 
                 Log.i(TAG, "Connecting to printer $ip:$port")
-                val socket = Socket(ip, port)
-                val out = DataOutputStream(socket.getOutputStream())
 
                 val ippHeader = buildIppHeader(ip, port, file.name)
                 val pdfBytes  = FileInputStream(file).use { it.readBytes() }
+                val contentLength = ippHeader.size + pdfBytes.size
 
-                // IPP message = IPP header bytes + raw PDF bytes
+                // IPP is transported over HTTP — raw TCP alone won't work
+                val httpHeaders = "POST /ipp/print HTTP/1.1\r\n" +
+                    "Host: $ip:$port\r\n" +
+                    "Content-Type: application/ipp\r\n" +
+                    "Content-Length: $contentLength\r\n" +
+                    "Connection: close\r\n\r\n"
+
+                val socket = Socket(ip, port)
+                val out = socket.getOutputStream()
+                out.write(httpHeaders.toByteArray(Charsets.UTF_8))
                 out.write(ippHeader)
                 out.write(pdfBytes)
                 out.flush()
 
-                // Read response (we just drain it — a real app might parse status)
                 val response = socket.getInputStream().readBytes()
-                Log.i(TAG, "Printer response: ${response.size} bytes")
+                Log.i(TAG, "Printer response: ${response.toString(Charsets.UTF_8).take(500)}")
 
-                out.close()
                 socket.close()
-
                 Log.i(TAG, "Print job sent successfully: ${file.name}")
 
             } catch (e: Exception) {
                 Log.e(TAG, "Print failed: ${e.message}", e)
             }
         }.start()
+    }
+
+    fun buildTestPdf(): ByteArray {
+        val content = "BT /F1 14 Tf 72 720 Td (Magic Mirror Print - Test Page) Tj ET\n"
+        val sb = StringBuilder()
+        val offsets = mutableListOf<Int>()
+
+        sb.append("%PDF-1.4\n")
+        offsets.add(sb.length)
+        sb.append("1 0 obj\n<</Type /Catalog /Pages 2 0 R>>\nendobj\n")
+        offsets.add(sb.length)
+        sb.append("2 0 obj\n<</Type /Pages /Kids [3 0 R] /Count 1>>\nendobj\n")
+        offsets.add(sb.length)
+        sb.append("3 0 obj\n<</Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] " +
+            "/Resources <</Font <</F1 5 0 R>>>> /Contents 4 0 R>>\nendobj\n")
+        offsets.add(sb.length)
+        sb.append("4 0 obj\n<</Length ${content.length}>>\nstream\n${content}endstream\nendobj\n")
+        offsets.add(sb.length)
+        sb.append("5 0 obj\n<</Type /Font /Subtype /Type1 /BaseFont /Helvetica>>\nendobj\n")
+
+        val xrefPos = sb.length
+        sb.append("xref\n0 6\n0000000000 65535 f \n")
+        offsets.forEach { sb.append("%010d 00000 n \n".format(it)) }
+        sb.append("trailer\n<</Size 6 /Root 1 0 R>>\nstartxref\n$xrefPos\n%%EOF\n")
+
+        return sb.toString().toByteArray(Charsets.US_ASCII)
     }
 
     /**
