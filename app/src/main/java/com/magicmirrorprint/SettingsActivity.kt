@@ -170,10 +170,6 @@ class SettingsActivity : Activity() {
             startService(Intent(this, WatcherService::class.java))
         }
         updateStatusUI()
-        // If service is running, get out of the way — user wants the Magic Mirror app
-        if (WatcherService.isRunning) {
-            moveTaskToBack(true)
-        }
     }
 
     // ─── Actions ──────────────────────────────────────────────────────────────
