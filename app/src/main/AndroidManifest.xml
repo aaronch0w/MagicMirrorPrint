@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.magicmirrorprint">
+
+    <!-- Storage: API 27 uses legacy READ/WRITE permissions, no MANAGE_EXTERNAL_STORAGE needed -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!-- Required to run a foreground service (mandatory on Android 8.0+) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- Network: needed for IPP printing -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Auto-restart on device reboot -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:allowBackup="true"
+        android:label="Magic Mirror Print"
+        android:icon="@android:drawable/ic_menu_send"
+        android:theme="@android:style/Theme.Material.Light"
+        android:supportsRtl="true">
+
+        <!-- Main entry point: Settings screen -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Folder browser activity -->
+        <activity
+            android:name=".FolderPickerActivity"
+            android:exported="false" />
+
+        <!-- Background watcher service -->
+        <service
+            android:name=".WatcherService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- Boot receiver for auto-restart -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>
