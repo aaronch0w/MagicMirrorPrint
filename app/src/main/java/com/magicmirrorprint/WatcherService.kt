@@ -177,19 +177,26 @@ class WatcherService : Service() {
                     val clientName = dateDir.parentFile?.name ?: "Unknown Client"
                     val scanTimestamp = formatTimestamp(dateDir.name)
 
-                    notificationHelper.showReportNotification(
-                        pdfPath = pdfFile.absolutePath,
-                        clientName = clientName,
-                        scanTimestamp = scanTimestamp
-                    )
-                    // Overlay draws above all apps including full-screen kiosk apps
-                    OverlayManager.show(
-                        context = this@WatcherService,
-                        pdfPath = pdfFile.absolutePath,
-                        clientName = clientName,
-                        scanTimestamp = scanTimestamp,
-                        timeoutSeconds = prefs.notifTimeoutSeconds
-                    )
+                    if (prefs.autoPrint) {
+                        // Auto-print: send job immediately, play sound, show quiet status
+                        PrintManager.print(this@WatcherService, pdfFile.absolutePath, prefs)
+                        notificationHelper.playAlertSound()
+                        notificationHelper.showPrintingNotification(clientName, scanTimestamp)
+                    } else {
+                        // Manual mode: show heads-up notification + overlay for staff to confirm
+                        notificationHelper.showReportNotification(
+                            pdfPath = pdfFile.absolutePath,
+                            clientName = clientName,
+                            scanTimestamp = scanTimestamp
+                        )
+                        OverlayManager.show(
+                            context = this@WatcherService,
+                            pdfPath = pdfFile.absolutePath,
+                            clientName = clientName,
+                            scanTimestamp = scanTimestamp,
+                            timeoutSeconds = prefs.notifTimeoutSeconds
+                        )
+                    }
                 }
             }
         }

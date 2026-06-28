@@ -40,7 +40,7 @@ class AppPrefs(context: Context) {
         set(value) = prefs.edit().putInt(KEY_PRINTER_PORT, value).apply()
 
     var autoPrint: Boolean
-        get() = prefs.getBoolean(KEY_AUTO_PRINT, false)
+        get() = prefs.getBoolean(KEY_AUTO_PRINT, true)
         set(value) = prefs.edit().putBoolean(KEY_AUTO_PRINT, value).apply()
 
     var notifTimeoutSeconds: Int

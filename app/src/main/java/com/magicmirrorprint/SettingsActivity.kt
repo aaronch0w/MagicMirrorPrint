@@ -116,7 +116,7 @@ class SettingsActivity : Activity() {
         // ── Auto-print toggle ────────────────────────────────────────────────
         val autoRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         val autoLabel = TextView(this).apply {
-            text = "Auto-print without prompt"
+            text = "Auto-print (recommended)"
             textSize = 14f
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             gravity = android.view.Gravity.CENTER_VERTICAL
@@ -130,7 +130,7 @@ class SettingsActivity : Activity() {
         addSpacing(root, 8)
 
         val autoHint = TextView(this).apply {
-            text = "When ON, reports print immediately without showing the notification."
+            text = "ON: prints immediately when a report is detected + plays a sound alert.\nOFF: shows a Print/Dismiss notification instead (requires overlay permission)."
             textSize = 12f
             setTextColor(0xFF888888.toInt())
         }

@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
 import android.os.Build
 
 class NotificationHelper(private val context: Context) {
@@ -133,6 +134,23 @@ class NotificationHelper(private val context: Context) {
             .build()
 
         manager.notify(REPORT_NOTIFICATION_ID, notification)
+    }
+
+    fun showPrintingNotification(clientName: String, scanTimestamp: String) {
+        val notification = Notification.Builder(context, CHANNEL_WATCHER)
+            .setContentTitle("Printing Report")
+            .setContentText("$clientName  •  $scanTimestamp")
+            .setSmallIcon(android.R.drawable.ic_menu_send)
+            .setAutoCancel(true)
+            .build()
+        manager.notify(REPORT_NOTIFICATION_ID, notification)
+    }
+
+    fun playAlertSound() {
+        try {
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            RingtoneManager.getRingtone(context, uri)?.play()
+        } catch (_: Exception) {}
     }
 
     fun cancelReportNotification() {
